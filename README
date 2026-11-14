@@ -1,0 +1,54 @@
+TA-netqual
+====
+
+Collects per-interface link quality from /sys/class/net and /proc/net/dev: carrier/operstate, negotiated speed, MTU, cumulative RX/TX error and drop counters per physical interface (virtual/veth/lo excluded). Emits JSON events to index=main (sourcetype netqual:status) and netqual.<iface>_* metrics to index=metrics (sourcetype netqual:metrics) at 60s cadence, with dashboards.
+
+Prerequisites
+-------------
+  * none - pure /sys + /proc reads (no ethtool dependency)
+  * Splunk Enterprise or Universal Forwarder 9.x - 10.6 (forwarder recommended
+    on monitored hosts).
+  * A metrics-typed index (default name: metrics) on the indexer:
+
+      [metrics]
+      datatype = metric
+
+    Forwarders only need that index to exist on the indexer side.
+  * No network egress, no root requirement beyond the Splunk service account.
+    Fully standalone add-on with no dependencies.
+
+Install
+-------
+Install on each monitored host (Apps > Install app from file, splunk install
+app, or deployment server), restart Splunk, then verify:
+
+  index=main sourcetype="netqual:status" | head
+
+Search quick reference
+----------------------
+  index=main sourcetype="netqual:status" | head
+  | mcatalog values(metric_name) where index=metrics metric_name="netqual.*" by host
+  | mstats avg("netqual.*") where index=metrics span=60s by host
+
+Usage
+-----
+Events: index=main sourcetype=netqual:status  (per-iface JSON: speed_mbps, mtu, carrier, errors, drops)
+Metrics: netqual.<iface>_<counter> on index=metrics (cumulative counters - use rate() in searches)
+Alarm status when a physical interface reports no carrier.
+Dashboards: TA-Netqual > Netqual Overview / Netqual Metrics
+
+Configure
+---------
+Override the interval or destination index in etc/apps/TA-netqual/local/inputs.conf
+(never edit default/).
+
+Troubleshooting
+---------------
+  * Speed is 0 in JSON/sysfs when the link is down.
+  * Virtual interfaces (lo, veth*, docker*, br*, cni*) are excluded by name.
+
+License
+-------
+SOURCE-AVAILABLE (see LICENSE) - free personal, educational and evaluation
+use; commercial or production use requires a paid license from BentleyPC
+LLC (https://www.bentleypc.com).
