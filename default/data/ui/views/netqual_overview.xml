@@ -3,43 +3,145 @@
   <description>Collects per-interface link quality from /sys/class/net and /proc/net/dev: carrier/operstate, negotiated speed, MTU, cumulative RX/TX error and drop counters per physical</description>
   <row>
     <panel>
-      <title>Hosts Reporting (latest)</title>
-      <table>
+      <title>Interfaces (per host, latest)</title>
+      <single>
         <search>
-          <query>index=main sourcetype="netqual:status"
-| stats latest(_time) as "Last seen", count as Reports by host
-| table host "Last seen" Reports</query>
+          <query>| mstats avg("netqual.iface_total") as value where index=metrics span=5m
+| fields - _time | tail 1</query>
           <done/>
         </search>
+      </single>
+    </panel>
+    <panel>
+      <title>Interfaces with carrier up (fleet, latest)</title>
+      <single>
+        <search>
+          <query>index=main sourcetype="netqual:status"
+| eventstats latest(_time) as lt by host
+| dedup host lt
+| rex field=_raw max_match=0 "\"carrier\":\s*(?&lt;c&gt;[0-9]+)"
+| mvexpand c
+| stats sum(c) as value</query>
+          <done/>
+        </search>
+      </single>
+    </panel>
+    <panel>
+      <title>Link flap cycles reported (fleet)</title>
+      <single>
+        <search>
+          <query>index=main sourcetype="netqual:status"
+| spath input=_raw output=f path=link_flaps{}
+| stats sum(mvcount(f)) as value</query>
+          <done/>
+        </search>
+      </single>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Interfaces - carrier (1=up), latest per host</title>
+      <table>
+        <search>
+          <query>| mstats avg("netqual.*_carrier") as "v*" where index=metrics by host, metric_name span=5m
+| stats last(v*) as "v*" by host
+| rename v* as "netqual.*_carrier"</query>
+          <done/>
+        </search>
+        <option name="count">100</option>
         <option name="drilldown">none</option>
       </table>
     </panel>
   </row>
   <row>
     <panel>
-      <title>Distinct netqual.* Metrics (last hour)</title>
-      <single>
+      <title>Interfaces - negotiated speed (Mb/s), latest per host</title>
+      <table>
         <search>
-          <query>| mcatalog values(metric_name) as m where index=metrics metric_name="netqual.*"
-| eval count=mvcount(m)</query>
+          <query>| mstats avg("netqual.*_speed_mbps") as "v*" where index=metrics by host, metric_name span=5m
+| stats last(v*) as "v*" by host
+| rename v* as "netqual.*_speed_mbps"</query>
           <done/>
         </search>
-        <option name="underLabel">netqual.* metrics streaming</option>
-      </single>
+        <option name="count">100</option>
+        <option name="drilldown">none</option>
+      </table>
     </panel>
   </row>
   <row>
     <panel>
-      <title>Issues (newest first)</title>
+      <title>Interfaces - RX error/drop counters (cumulative, latest)</title>
       <table>
         <search>
-          <query>index=main sourcetype="netqual:status" _raw="*alarm*"
-| sort - _time
-| table _time host _raw
-| rename _raw as Event
-| head 200</query>
+          <query>| mstats avg("netqual.*_rx_errors") as "v*" where index=metrics by host, metric_name span=5m
+| stats last(v*) as "v*" by host
+| rename v* as "netqual.*_rx_errors"</query>
           <done/>
         </search>
+        <option name="count">100</option>
+        <option name="drilldown">none</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Interfaces - RX drops (cumulative, latest)</title>
+      <table>
+        <search>
+          <query>| mstats avg("netqual.*_rx_dropped") as "v*" where index=metrics by host, metric_name span=5m
+| stats last(v*) as "v*" by host
+| rename v* as "netqual.*_rx_dropped"</query>
+          <done/>
+        </search>
+        <option name="count">100</option>
+        <option name="drilldown">none</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Interfaces - TX error/drop counters (cumulative, latest)</title>
+      <table>
+        <search>
+          <query>| mstats avg("netqual.*_tx_errors") as "v*" where index=metrics by host, metric_name span=5m
+| stats last(v*) as "v*" by host
+| rename v* as "netqual.*_tx_errors"</query>
+          <done/>
+        </search>
+        <option name="count">100</option>
+        <option name="drilldown">none</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Interfaces - TX drops (cumulative, latest)</title>
+      <table>
+        <search>
+          <query>| mstats avg("netqual.*_tx_dropped") as "v*" where index=metrics by host, metric_name span=5m
+| stats last(v*) as "v*" by host
+| rename v* as "netqual.*_tx_dropped"</query>
+          <done/>
+        </search>
+        <option name="count">100</option>
+        <option name="drilldown">none</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Link flaps observed (recent cycles)</title>
+      <table>
+        <search>
+          <query>index=main sourcetype="netqual:status"
+| dedup host
+| spath input=_raw output=x path=link_flaps{}
+| mvexpand x
+| rename x as "interface"
+| table host "interface"</query>
+          <done/>
+        </search>
+        <option name="count">50</option>
         <option name="drilldown">none</option>
       </table>
     </panel>

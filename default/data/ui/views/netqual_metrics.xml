@@ -1,67 +1,92 @@
 <dashboard version="1.1" theme="light">
   <label>TA-netqual Metrics</label>
-  <description>Index-time metrics over index=metrics (sourcetype=netqual:metrics)</description>
+  <description> Index-time metrics over index=metrics (sourcetype netqual:metrics); series prefixed 'netqual.'.</description>
   <row>
     <panel>
-      <title>All netqual.* series</title>
+      <title>Carrier (per interface, 1=up)</title>
       <chart>
         <search>
-          <query>| mstats avg("netqual.*") as "v*" where index=metrics by metric_name span=5m
-| foreach v* [eval Value=coalesce(Value,&lt;&lt;FIELD&gt;&gt;)]
-| fields - v*
-| xyseries _time metric_name Value</query>
+          <query>| mstats avg("netqual.*_carrier") as "v*" where index=metrics by metric_name span=5m
+| rename v* as "netqual.*_carrier"</query>
           <done/>
         </search>
         <option name="charting.chart">line</option>
-        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.nullValueRendering">connect</option>
         <option name="charting.drilldown">none</option>
       </chart>
     </panel>
-      <panel>
-      <title>Carrier / link up (1=up)</title>
+  </row>
+  <row>
+    <panel>
+      <title>Negotiated speed (Mb/s per interface)</title>
       <chart>
         <search>
-          <query>| mstats avg("netqual.*") as "v*" where index=metrics by metric_name span=5m
-| search metric_name IN ("carrier","operstate_up")
-| foreach v* [eval Value=coalesce(Value,&lt;&lt;FIELD&gt;&gt;)]
-| fields - v*
-| xyseries _time metric_name Value</query>
+          <query>| mstats avg("netqual.*_speed_mbps") as "v*" where index=metrics by metric_name span=5m
+| rename v* as "netqual.*_speed_mbps"</query>
           <done/>
         </search>
         <option name="charting.chart">line</option>
-        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.nullValueRendering">connect</option>
         <option name="charting.drilldown">none</option>
       </chart>
     </panel>
-      <panel>
-      <title>Speed (Mbps)</title>
+  </row>
+  <row>
+    <panel>
+      <title>RX errors (cumulative per interface)</title>
       <chart>
         <search>
-          <query>| mstats avg("netqual.*") as "v*" where index=metrics by metric_name span=5m
-| search metric_name="*speed_mbps*"
-| foreach v* [eval Value=coalesce(Value,&lt;&lt;FIELD&gt;&gt;)]
-| fields - v*
-| xyseries _time metric_name Value</query>
+          <query>| mstats avg("netqual.*_rx_errors") as "v*" where index=metrics by metric_name span=5m
+| rename v* as "netqual.*_rx_errors"</query>
           <done/>
         </search>
         <option name="charting.chart">line</option>
-        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.nullValueRendering">connect</option>
         <option name="charting.drilldown">none</option>
       </chart>
     </panel>
-      <panel>
-      <title>Error / drop counters</title>
+  </row>
+  <row>
+    <panel>
+      <title>TX errors (cumulative per interface)</title>
       <chart>
         <search>
-          <query>| mstats avg("netqual.*") as "v*" where index=metrics by metric_name span=5m
-| search metric_name IN ("*rx_errors*","*tx_errors*","*rx_drops*","*tx_drops*")
-| foreach v* [eval Value=coalesce(Value,&lt;&lt;FIELD&gt;&gt;)]
-| fields - v*
-| xyseries _time metric_name Value</query>
+          <query>| mstats avg("netqual.*_tx_errors") as "v*" where index=metrics by metric_name span=5m
+| rename v* as "netqual.*_tx_errors"</query>
           <done/>
         </search>
         <option name="charting.chart">line</option>
-        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.nullValueRendering">connect</option>
+        <option name="charting.drilldown">none</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>RX drops (cumulative per interface)</title>
+      <chart>
+        <search>
+          <query>| mstats avg("netqual.*_rx_dropped") as "v*" where index=metrics by metric_name span=5m
+| rename v* as "netqual.*_rx_dropped"</query>
+          <done/>
+        </search>
+        <option name="charting.chart">line</option>
+        <option name="charting.chart.nullValueRendering">connect</option>
+        <option name="charting.drilldown">none</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>TX drops (cumulative per interface)</title>
+      <chart>
+        <search>
+          <query>| mstats avg("netqual.*_tx_dropped") as "v*" where index=metrics by metric_name span=5m
+| rename v* as "netqual.*_tx_dropped"</query>
+          <done/>
+        </search>
+        <option name="charting.chart">line</option>
+        <option name="charting.chart.nullValueRendering">connect</option>
         <option name="charting.drilldown">none</option>
       </chart>
     </panel>
