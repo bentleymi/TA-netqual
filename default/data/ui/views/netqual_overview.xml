@@ -3,7 +3,7 @@
   <description>Collects per-interface link quality from /sys/class/net and /proc/net/dev: carrier/operstate, negotiated speed, MTU, cumulative RX/TX error and drop counters per physical</description>
   <row>
     <panel>
-      <title>Interfaces (per host, latest)</title>
+      <title>Interfaces (fleet, latest)</title>
       <single>
         <search>
           <query>| mstats avg("netqual.iface_total") as value where index=metrics span=5m
@@ -32,7 +32,7 @@
         <search>
           <query>index=main sourcetype="netqual:status"
 | spath input=_raw output=f path=link_flaps{}
-| stats sum(mvcount(f)) as value</query>
+| stats sum(eval(mvcount(f))) as value</query>
           <done/>
         </search>
       </single>
@@ -134,8 +134,8 @@
       <table>
         <search>
           <query>index=main sourcetype="netqual:status"
-| dedup host
 | spath input=_raw output=x path=link_flaps{}
+| where isnotnull(x) AND x!=""
 | mvexpand x
 | rename x as "interface"
 | table host "interface"</query>

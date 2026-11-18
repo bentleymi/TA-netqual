@@ -3,10 +3,10 @@
   <description> Index-time metrics over index=metrics (sourcetype netqual:metrics); series prefixed 'netqual.'.</description>
   <row>
     <panel>
-      <title>Carrier (per interface, 1=up)</title>
+      <title>Carrier (per host+interface, 1=up)</title>
       <chart>
         <search>
-          <query>| mstats avg("netqual.*_carrier") as "v*" where index=metrics by metric_name span=5m
+          <query>| mstats avg("netqual.*_carrier") as "v*" where index=metrics by host, metric_name span=5m
 | rename v* as "netqual.*_carrier"</query>
           <done/>
         </search>
@@ -18,10 +18,10 @@
   </row>
   <row>
     <panel>
-      <title>Negotiated speed (Mb/s per interface)</title>
+      <title>Negotiated speed (Mb/s per host+interface)</title>
       <chart>
         <search>
-          <query>| mstats avg("netqual.*_speed_mbps") as "v*" where index=metrics by metric_name span=5m
+          <query>| mstats avg("netqual.*_speed_mbps") as "v*" where index=metrics by host, metric_name span=5m
 | rename v* as "netqual.*_speed_mbps"</query>
           <done/>
         </search>
@@ -33,10 +33,10 @@
   </row>
   <row>
     <panel>
-      <title>RX errors (cumulative per interface)</title>
+      <title>RX errors (cumulative per host+interface)</title>
       <chart>
         <search>
-          <query>| mstats avg("netqual.*_rx_errors") as "v*" where index=metrics by metric_name span=5m
+          <query>| mstats avg("netqual.*_rx_errors") as "v*" where index=metrics by host, metric_name span=5m
 | rename v* as "netqual.*_rx_errors"</query>
           <done/>
         </search>
@@ -48,10 +48,10 @@
   </row>
   <row>
     <panel>
-      <title>TX errors (cumulative per interface)</title>
+      <title>TX errors (cumulative per host+interface)</title>
       <chart>
         <search>
-          <query>| mstats avg("netqual.*_tx_errors") as "v*" where index=metrics by metric_name span=5m
+          <query>| mstats avg("netqual.*_tx_errors") as "v*" where index=metrics by host, metric_name span=5m
 | rename v* as "netqual.*_tx_errors"</query>
           <done/>
         </search>
@@ -63,10 +63,10 @@
   </row>
   <row>
     <panel>
-      <title>RX drops (cumulative per interface)</title>
+      <title>RX drops (cumulative per host+interface)</title>
       <chart>
         <search>
-          <query>| mstats avg("netqual.*_rx_dropped") as "v*" where index=metrics by metric_name span=5m
+          <query>| mstats avg("netqual.*_rx_dropped") as "v*" where index=metrics by host, metric_name span=5m
 | rename v* as "netqual.*_rx_dropped"</query>
           <done/>
         </search>
@@ -78,10 +78,10 @@
   </row>
   <row>
     <panel>
-      <title>TX drops (cumulative per interface)</title>
+      <title>TX drops (cumulative per host+interface)</title>
       <chart>
         <search>
-          <query>| mstats avg("netqual.*_tx_dropped") as "v*" where index=metrics by metric_name span=5m
+          <query>| mstats avg("netqual.*_tx_dropped") as "v*" where index=metrics by host, metric_name span=5m
 | rename v* as "netqual.*_tx_dropped"</query>
           <done/>
         </search>
