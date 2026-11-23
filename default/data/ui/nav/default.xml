@@ -3,5 +3,6 @@
     <view name="netqual_overview" />
     <view name="netqual_metrics" />
     <search label="TA-netqual Events" search="search index=main sourcetype=netqual:status" />
+    <view name="license" />
   </nav>
 </application>
